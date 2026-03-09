@@ -62,10 +62,16 @@ func (s *Server) setupRoutes() {
 	// Admin endpoints
 	s.mux.Handle("POST /api/admin/agents", adminMw(http.HandlerFunc(s.handleCreateAgent)))
 
+	// Public registration (no auth, rate-limited by IP)
+	s.mux.HandleFunc("POST /api/register", s.handleRegister)
+
 	// Health check (no auth)
 	s.mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
+
+	// Dashboard (no auth, public read-only)
+	s.mux.HandleFunc("GET /", s.handleDashboard)
 }
 
 func (s *Server) ListenAndServe() error {

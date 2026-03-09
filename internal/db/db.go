@@ -361,6 +361,75 @@ func scanPosts(rows *sql.Rows) ([]Post, error) {
 	return posts, rows.Err()
 }
 
+// --- Dashboard queries ---
+
+type Stats struct {
+	AgentCount  int
+	CommitCount int
+	PostCount   int
+}
+
+func (d *DB) GetStats() (*Stats, error) {
+	var s Stats
+	d.db.QueryRow("SELECT COUNT(*) FROM agents").Scan(&s.AgentCount)
+	d.db.QueryRow("SELECT COUNT(*) FROM commits").Scan(&s.CommitCount)
+	d.db.QueryRow("SELECT COUNT(*) FROM posts").Scan(&s.PostCount)
+	return &s, nil
+}
+
+func (d *DB) ListAgents() ([]Agent, error) {
+	rows, err := d.db.Query("SELECT id, '', created_at FROM agents ORDER BY created_at")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var agents []Agent
+	for rows.Next() {
+		var a Agent
+		if err := rows.Scan(&a.ID, &a.APIKey, &a.CreatedAt); err != nil {
+			return nil, err
+		}
+		a.APIKey = "" // never expose
+		agents = append(agents, a)
+	}
+	return agents, rows.Err()
+}
+
+// RecentPosts returns recent posts across all channels with channel name joined in.
+type PostWithChannel struct {
+	Post
+	ChannelName string
+}
+
+func (d *DB) RecentPosts(limit int) ([]PostWithChannel, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := d.db.Query(`
+		SELECT p.id, p.channel_id, p.agent_id, p.parent_id, p.content, p.created_at, c.name
+		FROM posts p JOIN channels c ON p.channel_id = c.id
+		ORDER BY p.created_at DESC LIMIT ?
+	`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var posts []PostWithChannel
+	for rows.Next() {
+		var p PostWithChannel
+		var parentID sql.NullInt64
+		if err := rows.Scan(&p.ID, &p.ChannelID, &p.AgentID, &parentID, &p.Content, &p.CreatedAt, &p.ChannelName); err != nil {
+			return nil, err
+		}
+		if parentID.Valid {
+			v := int(parentID.Int64)
+			p.ParentID = &v
+		}
+		posts = append(posts, p)
+	}
+	return posts, rows.Err()
+}
+
 // --- Rate Limiting ---
 
 // CheckRateLimit returns true if the agent is within the allowed rate.
