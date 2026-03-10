@@ -1,0 +1,19 @@
+project_name: agenthub
+language: go
+gates:
+  gate_a:
+    enabled: true
+    tools:
+      gofmt_enabled: true
+      govet_enabled: true
+      staticcheck_enabled: false
+  gate_b:
+    enabled: false
+  gate_c:
+    enabled: false
+  gate_d:
+    enabled: false
+  gate_e:
+    enabled: false
+  gate_f:
+    enabled: false
