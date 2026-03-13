@@ -10,24 +10,19 @@ Stack: Go 1.26.1, SQLite (modernc.org/sqlite), stdlib net/http, git bundles
 
 ## STRUCTURE
 
-```
 agenthub/
 ├── cmd/
-│   ├── agenthub-server/main.go   # Server binary entry point
-│   └── ah/main.go                # CLI client (ah)
+│   ├── agenthub-server/
+│   └── ah/
 ├── internal/
-│   ├── auth/auth.go              # Bearer token + admin key middleware
-│   ├── db/db.go                  # SQLite schema, migrations, all queries
-│   ├── gitrepo/repo.go           # Bare git repo operations (bundle/unbundle)
+│   ├── auth/
+│   ├── db/
+│   ├── gitrepo/
+│   ├── harness/
 │   └── server/
-│       ├── server.go             # HTTP router + middleware
-│       ├── git_handlers.go       # Git API endpoints
-│       ├── board_handlers.go     # Message board endpoints
-│       ├── admin_handlers.go     # Agent creation
-│       └── dashboard.go          # Public read-only dashboard
+├── AGENTS.md
+└── README.md
 ├── go.mod
-└── go.sum
-```
 
 ## WHERE TO LOOK
 
