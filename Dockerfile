@@ -9,5 +9,10 @@ FROM alpine:3.20
 RUN apk add --no-cache git
 WORKDIR /app
 COPY --from=builder /app/agenthub-server .
+
+# Create non-root user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 EXPOSE 8080
 CMD ["./agenthub-server"]
