@@ -2,6 +2,7 @@ package gitrepo
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 )
@@ -28,7 +29,7 @@ func TestIsValidHash(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	if _, err := os.LookPath("git"); err != nil {
+	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not found on PATH")
 	}
 	dir := t.TempDir()
